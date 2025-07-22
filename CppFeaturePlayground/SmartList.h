@@ -8,6 +8,7 @@
 #include <functional>
 #include <mutex>
 #include <thread>
+#include <nlohmann/json.hpp>
 
 template <typename T>
 struct SmartNode
@@ -28,6 +29,8 @@ public:
 	void CallOnAll(std::function<void(const T&)> const& Callback);
 	void Print();
 	void Clear();
+	void SaveTo(const std::string& Filename);
+	void LoadFrom(const std::string& Filename);
 
 	bool Log = false;
 
@@ -157,9 +160,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 	int NumThreadElements = NumElements / NumThreads;
 	int NumExtras = NumElements - NumThreadElements * NumThreads;
 	GetLogStream() << "Creating " << NumThreads - NumExtras << " threads to handle " << NumThreadElements <<
-		" elements and "
-		<< NumExtras
-		<< " threads to handle " << NumThreadElements + 1 << " elements\n";
+		" elements and " << NumExtras << " threads to handle " << NumThreadElements + 1 << " elements\n";
 
 	std::vector<std::pair<std::shared_ptr<SmartNode<T>>, int>> ThreadLists;
 	ThreadLists.resize(NumThreads);
@@ -222,6 +223,7 @@ void SmartList<T>::Print()
 	if (!Head)
 	{
 		std::cout << "List is empty";
+		return;
 	}
 
 	std::ostringstream Stream;
@@ -240,6 +242,68 @@ void SmartList<T>::Clear()
 {
 	GetLogStream() << "Clearing the list\n";
 	Head = nullptr;
+}
+
+template <typename T>
+void SmartList<T>::SaveTo(const std::string& Filename)
+{
+	std::string FullName = Filename + ".json";
+	GetLogStream() << "Saving to file " << FullName << "\n";
+	std::ofstream Filestream(FullName);
+	if (!Filestream.is_open())
+	{
+		GetLogStream() << "Saving failed. Failed to open file " << FullName << "\n";
+		return;
+	}
+
+	nlohmann::json JsonObject;
+	JsonObject["log"] = Log;
+	JsonObject["data"] = nlohmann::json::array();
+	std::shared_ptr<SmartNode<T>> Current = Head;
+	while (Current)
+	{
+		JsonObject["data"].push_back(Current->Data);
+		Current = Current->Next;
+	}
+	std::string Content = JsonObject.dump(4);
+	GetLogStream() << "File content:\n" << Content << "\n";
+	Filestream << Content;
+	Filestream.close();
+}
+
+template <typename T>
+void SmartList<T>::LoadFrom(const std::string& Filename)
+{
+	std::string FullName = Filename + ".json";
+	GetLogStream() << "Loading from file " << FullName << "\n";
+	std::ifstream Filestream(FullName);
+	if (!Filestream.is_open())
+	{
+		GetLogStream() << "Loading failed. Failed to open file " << FullName << "\n";
+		return;
+	}
+
+	Clear();
+	nlohmann::json JsonObject = nlohmann::json::parse(Filestream);
+	Log = JsonObject["log"];
+
+	int NumElements = int(JsonObject["data"].size());
+	if (NumElements == 0)
+	{
+		GetLogStream() << "Loaded list is empty\n";
+		return;
+	}
+
+	Head = std::make_shared<SmartNode<T>>();
+	Head->Data = JsonObject["data"].at(0);
+	std::shared_ptr<SmartNode<T>> Current = Head;
+	for (int i = 1; i < NumElements; ++i)
+	{
+		Current->Next = std::make_shared<SmartNode<T>>();
+		Current = Current->Next;
+		Current->Data = T(JsonObject["data"].at(i));
+	}
+	GetLogStream() << "Loaded list with " << NumElements << " elements\n";
 }
 
 template <typename T>

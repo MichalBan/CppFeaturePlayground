@@ -10,3 +10,13 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 
 # TODO: Add tests and install targets if needed.
+
+include(FetchContent)
+FetchContent_Declare(
+  json_lib
+  GIT_REPOSITORY https://github.com/nlohmann/json
+  GIT_TAG        55f93686c01528224f448c19128836e7df245f72
+)
+FetchContent_MakeAvailable(json_lib)
+
+target_link_libraries(CppFeaturePlayground PRIVATE nlohmann_json::nlohmann_json)

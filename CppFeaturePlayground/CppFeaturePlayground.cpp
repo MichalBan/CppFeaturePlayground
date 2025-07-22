@@ -24,6 +24,13 @@ int main()
 	List.Add(3.9f);
 	List.Print();
 
+	std::cout << "Saving to file";
+	List.SaveTo("Mylist");
+
+	std::cout << "Loading from file";
+	List.LoadFrom("MyList");
+	List.Print();
+
 	std::cout << "Removing the first element of value 2.5\n";
 	List.RemoveFirst(2.5, [](const float& E1, const float& E2)
 	{
@@ -38,11 +45,11 @@ int main()
 	});
 	List.Print();
 
-	std::cout << "Testing multithreading with a new random list\n";
+	int NumRandomElements = 99;
+	std::cout << "Multithreading with a new random list of " << NumRandomElements << " elements\n";
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<float> distribution(0.0, 5.0);
-	int NumRandomElements = 99;
 	List.Clear();
 	for (int i = 0; i < NumRandomElements; ++i)
 	{
