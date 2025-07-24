@@ -31,7 +31,7 @@ jobs:
         cd build
         ctest -C Debug --output-on-failure --verbose
 
-    - name: Coveralls GitHub Action
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ github.token }}
+    # - name: Coveralls GitHub Action
+    #   uses: coverallsapp/github-action@master
+    #   with:
+    #     github-token: ${{ github.token }}
