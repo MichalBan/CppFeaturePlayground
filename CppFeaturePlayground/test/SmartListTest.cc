@@ -37,7 +37,7 @@ TEST(remove_first, first)
 	{
 		List.Add(Val);
 	}
-	List.RemoveFirst(2, [](const int& E1, const int& E2) {return E1 == E2; });
+	List.RemoveFirst(2, [](const int& E1, const int& E2) { return E1 == E2; });
 
 	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
 	for (int i = 1; i < 5; ++i)
@@ -45,5 +45,28 @@ TEST(remove_first, first)
 		EXPECT_TRUE(Current != nullptr);
 		EXPECT_EQ(Current->Data, Values[i]);
 		Current = Current->Next;
+	}
+}
+
+TEST(remove_first, middle)
+{
+	int RemovedIndex = 2;
+	int Values[] = {2, 4, 5, 2, 4};
+	SmartList<int> List;
+	for (int Val : Values)
+	{
+		List.Add(Val);
+	}
+	List.RemoveFirst(Values[RemovedIndex], [](const int& E1, const int& E2) { return E1 == E2; });
+
+	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
+	for (int i = 0; i < 5; ++i)
+	{
+		if (i != RemovedIndex)
+		{
+			EXPECT_TRUE(Current != nullptr);
+			EXPECT_EQ(Current->Data, Values[i]);
+			Current = Current->Next;
+		}
 	}
 }

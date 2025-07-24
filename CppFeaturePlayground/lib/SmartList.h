@@ -81,7 +81,6 @@ bool SmartList<T>::RemoveFirst(T Value, std::function<bool(const T&, const T&)> 
 	if (Comparator(Head->Data, Value))
 	{
 		Head = Head->Next;
-		Head = nullptr;
 		GetLogStream() << "Removed 1 element\n";
 		return true;
 	}
