@@ -2,9 +2,7 @@
 //
 
 #include "CppFeaturePlayground.h"
-
 #include <random>
-
 #include "SmartList.h"
 
 int main()

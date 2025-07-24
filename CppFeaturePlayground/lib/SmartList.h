@@ -31,6 +31,7 @@ public:
 	void Clear();
 	void SaveTo(const std::string& Filename);
 	void LoadFrom(const std::string& Filename);
+	std::shared_ptr<SmartNode<T>> GetHead();
 
 	bool Log = false;
 
@@ -314,4 +315,10 @@ std::ostream& SmartList<T>::GetLogStream()
 		return std::cout;
 	}
 	return NullStream;
+}
+
+template <typename T>
+std::shared_ptr<SmartNode<T>> SmartList<T>::GetHead()
+{
+	return Head;
 }

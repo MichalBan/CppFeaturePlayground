@@ -1,22 +1,24 @@
-﻿# CMakeList.txt : CMake project for CppFeaturePlayground, include source and define
-# project specific logic here.
-#
+﻿add_subdirectory ("lib")
 
-# Add source to this project's executable.
-add_executable (CppFeaturePlayground "CppFeaturePlayground.cpp" "CppFeaturePlayground.h" "SmartList.h")
-
+add_executable (CppFeaturePlayground "src/CppFeaturePlayground.cpp" "src/CppFeaturePlayground.h")
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CppFeaturePlayground PROPERTY CXX_STANDARD 20)
 endif()
 
-# TODO: Add tests and install targets if needed.
+target_link_libraries(CppFeaturePlayground SmartList)
+target_include_directories(CppFeaturePlayground PRIVATE "lib")
 
-include(FetchContent)
 FetchContent_Declare(
-  json_lib
-  GIT_REPOSITORY https://github.com/nlohmann/json
-  GIT_TAG        55f93686c01528224f448c19128836e7df245f72
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest
+  GIT_TAG        52eb8108c5bdec04579160ae17225d66034bd723
 )
-FetchContent_MakeAvailable(json_lib)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-target_link_libraries(CppFeaturePlayground PRIVATE nlohmann_json::nlohmann_json)
+enable_testing()
+add_executable(list_test "test/SmartListTest.cc")
+target_link_libraries(list_test GTest::gtest_main SmartList)
+target_include_directories(list_test PRIVATE "lib")
+add_test(test_1 list_test)
+

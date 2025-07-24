@@ -10,6 +10,7 @@ if (POLICY CMP0141)
 endif()
 
 project ("CppFeaturePlayground")
+enable_testing()
 
 # Include sub-projects.
 add_subdirectory ("CppFeaturePlayground")

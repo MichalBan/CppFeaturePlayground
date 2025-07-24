@@ -6,4 +6,4 @@ My playground, where I practice using C++ features. This includes:
  - lambdas
  - json handling
 
-Also some practice on using CMake.
+Also some practice on using CMake and google tests.
