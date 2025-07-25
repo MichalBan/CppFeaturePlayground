@@ -180,7 +180,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 	}
 	GetLogStream() << "\n";
 
-	std::atomic ThreadCounter = 0;
+	int ThreadCounter = 0;
 	std::vector<std::thread> Threads;
 	std::mutex OutputMutex;
 	Threads.resize(NumThreads);
@@ -203,8 +203,8 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 				ThreadCurrent = ThreadCurrent->Next;
 			}
 			OutputMutex.lock();
-			GetLogStream() << "Thread " << i << " ending (" << ThreadCounter.fetch_add(1) + 1 << "/"
-				<< ThreadLists.size() << ")\n";
+			++ThreadCounter;
+			GetLogStream() << "Thread " << i << " ending (" << ThreadCounter << "/" << ThreadLists.size() << ")\n";
 			OutputMutex.unlock();
 		});
 	}
