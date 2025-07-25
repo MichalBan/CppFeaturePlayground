@@ -20,7 +20,7 @@ jobs:
 
     - name: Configure
       run: |
-        cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug
+        cmake -S . -B build -D CMAKE_BUILD_TYPE=Debug
 
     - name: Build
       run: |
@@ -29,7 +29,7 @@ jobs:
     - name: Test
       run: |
         cd build
-        ctest -C Debug --output-on-failure --verbose
+        ctest -C Debug --output-on-failure --verbose -T Test -T Coverage
 
     # - name: Coveralls GitHub Action
     #   uses: coverallsapp/github-action@master

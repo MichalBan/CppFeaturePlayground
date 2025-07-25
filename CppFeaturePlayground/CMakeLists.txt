@@ -1,10 +1,5 @@
 ﻿add_subdirectory ("lib")
-
 add_executable (CppFeaturePlayground "src/CppFeaturePlayground.cpp" "src/CppFeaturePlayground.h")
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET CppFeaturePlayground PROPERTY CXX_STANDARD 20)
-endif()
-
 target_link_libraries(CppFeaturePlayground SmartList)
 target_include_directories(CppFeaturePlayground PRIVATE "lib")
 

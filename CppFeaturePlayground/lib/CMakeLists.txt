@@ -8,3 +8,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json_lib)
 target_link_libraries(SmartList INTERFACE nlohmann_json::nlohmann_json)
+target_compile_options(SmartList INTERFACE --coverage)
+target_link_options(SmartList INTERFACE --coverage)
