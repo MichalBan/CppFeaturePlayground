@@ -21,7 +21,7 @@ jobs:
     - name: Install CMake
       uses: ssrobins/install-cmake@v1
       with:
-        version: 4.0.3
+        version: 3.27.0
 
     - name: Configure
       run: |

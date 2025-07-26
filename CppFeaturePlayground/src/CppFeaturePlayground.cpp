@@ -10,16 +10,7 @@ int main()
 	std::cout << "Creating a list and adding elements\n";
 	SmartList<float> List;
 	List.Log = true;
-	List.Add(1.1f);
-	List.Add(2.5f);
-	List.Add(3.5f);
-	List.Add(5.5f);
-	List.Add(2.5f);
-	List.Add(3.3f);
-	List.Add(3.5f);
-	List.Add(5.9f);
-	List.Add(2.5f);
-	List.Add(3.9f);
+	List.Add({1.1f, 2.5f, 3.5f, 5.5f, 2.5f, 3.3f, 3.5f, 5.9f, 2.5f, 3.9f});
 	List.Print();
 
 	std::cout << "Saving to file";

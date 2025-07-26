@@ -23,6 +23,7 @@ public:
 	SmartList();
 
 	void Add(T NewValue);
+	void Add(std::initializer_list<T> NewValues);
 	bool RemoveFirst(T Value, std::function<bool(const T&, const T&)> const& Comparator);
 	int RemoveAll(T Value, std::function<bool(const T&, const T&)> const& Comparator);
 	void CallOnAll(std::function<void(const T&)> const& Callback);
@@ -66,6 +67,35 @@ void SmartList<T>::Add(T NewValue)
 	}
 	Current->Next = std::make_shared<SmartNode<T>>();
 	Current->Next->Data = NewValue;
+}
+
+template <typename T>
+void SmartList<T>::Add(std::initializer_list<T> NewValues)
+{
+	std::shared_ptr<SmartNode<T>> Current = Head;
+
+	const T* Iter = NewValues.begin();
+	if (!Head)
+	{
+		Head = std::make_shared<SmartNode<T>>();
+		Head->Data = *Iter;
+		Current = Head;
+		++Iter;
+	}
+	else
+	{
+		while (Current->Next)
+		{
+			Current = Current->Next;
+		}
+	}
+
+	for (;Iter < NewValues.end(); ++Iter)
+	{
+		Current->Next = std::make_shared<SmartNode<T>>();
+		Current->Next->Data = *Iter;
+		Current = Current->Next;
+	}
 }
 
 template <typename T>
