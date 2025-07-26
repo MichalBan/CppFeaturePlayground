@@ -37,14 +37,16 @@ jobs:
         cmake --build build --config Debug
 
     - name: Test
+      if: startsWith(runner.os, 'win') == false
       run: |
         cd build
         ctest -C Debug --output-on-failure --verbose -T Test
 
-    - name: Coverage
+    - name: Test with Coverage
       if: startsWith(runner.os, 'win')
       run: |
-        ctest -T Coverage
+        cd build
+        ctest -C Debug --output-on-failure --verbose -T Test -T Coverage
 
     # - name: Coveralls GitHub Action
     #   uses: coverallsapp/github-action@master
