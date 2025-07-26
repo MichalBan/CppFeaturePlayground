@@ -37,7 +37,7 @@ jobs:
         cmake --build build --config Debug
 
     - name: Test
-      if: startsWith(runner.os, 'win') == false
+      if: startsWith(runner.os, 'ubu') == false
       run: |
         cd build
         ctest -C Debug --output-on-failure --verbose -T Test
