@@ -43,9 +43,3 @@ jobs:
         if [ "$RUNNER_OS" == "Linux" ]; then
           ctest -T Coverage
         fi
-
-    - name: Coveralls GitHub Action
-      if: runner.os == 'Linux'
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ github.token }}
