@@ -43,7 +43,7 @@ jobs:
         ctest -C Debug --output-on-failure --verbose -T Test
 
     - name: Test with Coverage
-      if: startsWith(runner.os, 'win')
+      if: startsWith(runner.os, 'ubu')
       run: |
         cd build
         ctest -C Debug --output-on-failure --verbose -T Test -T Coverage
