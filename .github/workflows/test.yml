@@ -19,9 +19,16 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install CMake
+      if: startsWith(runner.os, 'mac') == false
       uses: ssrobins/install-cmake@v1
       with:
         version: 3.27.0
+            
+    - name: Install CMake for macos
+      if: startsWith(runner.os, 'mac')
+      run: |
+          brew update
+          brew upgrade cmake
 
     - name: Configure
       run: |
