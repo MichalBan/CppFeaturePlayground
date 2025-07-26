@@ -21,8 +21,6 @@ jobs:
     - name: Install CMake
       if: startsWith(runner.os, 'mac') == false
       uses: ssrobins/install-cmake@v1
-      with:
-        version: 3.27.0
             
     - name: Install CMake for macos
       if: startsWith(runner.os, 'mac')
@@ -41,7 +39,12 @@ jobs:
     - name: Test
       run: |
         cd build
-        ctest -C Debug --output-on-failure --verbose -T Test -T Coverage
+        ctest -C Debug --output-on-failure --verbose -T Test
+
+    - name: Coverage
+      if: startsWith(runner.os, 'win')
+      run: |
+        ctest -T Coverage
 
     # - name: Coveralls GitHub Action
     #   uses: coverallsapp/github-action@master
