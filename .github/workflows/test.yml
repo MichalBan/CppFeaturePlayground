@@ -37,18 +37,15 @@ jobs:
         cmake --build build --config Debug
 
     - name: Test
-      if: startsWith(runner.os, 'ubu') == false
       run: |
         cd build
         ctest -C Debug --output-on-failure --verbose -T Test
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          ctest -T Coverage
+        fi
 
-    - name: Test with Coverage
-      if: startsWith(runner.os, 'ubu')
-      run: |
-        cd build
-        ctest -C Debug --output-on-failure --verbose -T Test -T Coverage
-
-    # - name: Coveralls GitHub Action
-    #   uses: coverallsapp/github-action@master
-    #   with:
-    #     github-token: ${{ github.token }}
+    - name: Coveralls GitHub Action
+      if: runner.os == 'Linux'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ github.token }}
