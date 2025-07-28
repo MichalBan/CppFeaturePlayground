@@ -44,14 +44,10 @@ jobs:
     - name: Get Coverage
       if: runner.os == 'Linux'
       run: |
+        pip Install gcovr
         cd build
         ctest -T Coverage
-        
-    - name: Generate Coverage Report
-      if: runner.os == 'Linux'
-      uses: threeal/gcovr-action@v1.1.0
-      with:
-        html-out: coverage.html
-        html-details: true
-        html-title: SmartList Coverage Report
-        html-theme: github.green
+        cd ..
+        gcovr --filter CppFeaturePlayground/lib/SmartList.h --coveralls coverage.json
+        curl -X POST https://coveralls.io/api/v1/jobs -F 'json_file=@coverage.json'
+
