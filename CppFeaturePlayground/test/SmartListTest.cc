@@ -134,22 +134,32 @@ TEST(remove_all, first)
 {
 	std::initializer_list<int> Initializer = {2, 4, 5, 2, 4};
 	std::vector<int> Values = Initializer;
-	int RemovedIndex = 2;
 
 	SmartList<int> List;
 	List.Add(Initializer);
-	EXPECT_TRUE(List.RemoveAll(Values[RemovedIndex], [](const int& E1, const int& E2) { return E1 == E2; }) == 1);
+	EXPECT_TRUE(List.RemoveAll(2, [](const int& E1, const int& E2) { return E1 == E2; }) == 2);
 
 	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
-	for (auto i = 0; i < Values.size(); ++i)
+	for (int Value : Values)
 	{
-		if (Values[i] != Values[RemovedIndex])
+		if (Value != 2)
 		{
 			EXPECT_TRUE(Current != nullptr);
-			EXPECT_EQ(Current->Data, Values[i]);
+			EXPECT_EQ(Current->Data, Value);
 			Current = Current->Next;
 		}
 	}
+}
+
+TEST(remove_all, remove_all_elements)
+{
+	std::initializer_list<int> Initializer = {2, 2};
+	std::vector<int> Values = Initializer;
+
+	SmartList<int> List;
+	List.Add(Initializer);
+	EXPECT_TRUE(List.RemoveAll(2, [](const int& E1, const int& E2) { return E1 == E2; }) == 2);
+	EXPECT_TRUE(List.GetHead() == nullptr);
 }
 
 TEST(call_on_all, square_array)
@@ -207,11 +217,24 @@ TEST(saveTo, strings)
 	EXPECT_TRUE(std::remove("TestFile.json") == 0);
 }
 
-TEST(loadFrom, empty)
+TEST(loadFrom, no_file)
 {
 	SmartList<std::string> List;
 	List.LoadFrom("TestFile");
 	EXPECT_TRUE(List.GetHead() == nullptr);
+}
+
+TEST(loadFrom, empty_list)
+{
+	std::string ExpectedResult = R"({"data":[],"log":false})";
+	std::ofstream Filestream("TestFile.json");
+	Filestream << ExpectedResult;
+	Filestream.close();
+
+	SmartList<std::string> List;
+	List.LoadFrom("TestFile");
+	EXPECT_TRUE(List.GetHead() == nullptr);
+	EXPECT_TRUE(std::remove("TestFile.json") == 0);
 }
 
 TEST(loadFrom, strings)
