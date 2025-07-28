@@ -40,13 +40,18 @@ jobs:
       run: |
         cd build
         ctest -C Debug --output-on-failure --verbose -T Test
-        if [ "$RUNNER_OS" == "Linux" ]; then
-          ctest -T Coverage
-          cd ..
-        fi
-
-    - name: Coveralls GitHub Action
+        
+    - name: Get Coverage
       if: runner.os == 'Linux'
-      uses: coverallsapp/github-action@master
+      run: |
+        ctest -T Coverage
+        cd ..
+        
+    - name: Generate Coverage Report
+      if: runner.os == 'Linux'
+      uses: threeal/gcovr-action@v1.1.0
       with:
-        github-token: ${{ github.token }}
+        html-out: coverage.html
+        html-details: true
+        html-title: SmartList Coverage Report
+        html-theme: github.green
