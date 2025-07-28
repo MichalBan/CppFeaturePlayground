@@ -42,4 +42,11 @@ jobs:
         ctest -C Debug --output-on-failure --verbose -T Test
         if [ "$RUNNER_OS" == "Linux" ]; then
           ctest -T Coverage
+          cd ..
         fi
+
+    - name: Coveralls GitHub Action
+      if: runner.os == 'Linux'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ github.token }}
