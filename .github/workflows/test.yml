@@ -44,7 +44,7 @@ jobs:
     - name: Get Coverage
       if: runner.os == 'Linux'
       run: |
-        pip Install gcovr
+        pip install gcovr
         cd build
         ctest -T Coverage
         cd ..
