@@ -189,7 +189,24 @@ TEST(call_on_all, empty)
 	});
 }
 
-TEST(saveTo, strings)
+TEST(print, empty)
+{
+	SmartList<int> List;
+	std::ostringstream StringStream;
+	List.Print(&StringStream);
+	EXPECT_EQ(StringStream.str(), "List is empty");
+}
+
+TEST(print, elements)
+{
+	SmartList<int> List;
+	List.Add({1, 5, 2, 5, 3});
+	std::ostringstream StringStream;
+	List.Print(&StringStream);
+	EXPECT_EQ(StringStream.str(), "List content: 1, 5, 2, 5, 3\n");
+}
+
+TEST(save_to, strings)
 {
 	std::initializer_list<std::string> Initializer = {"one", "two", "three"};
 	std::string ExpectedResult = R"({"data":["one","two","three"],"log":false})";
@@ -217,14 +234,14 @@ TEST(saveTo, strings)
 	EXPECT_TRUE(std::remove("TestFile.json") == 0);
 }
 
-TEST(loadFrom, no_file)
+TEST(load_from, no_file)
 {
 	SmartList<std::string> List;
 	List.LoadFrom("TestFile");
 	EXPECT_TRUE(List.GetHead() == nullptr);
 }
 
-TEST(loadFrom, empty_list)
+TEST(load_from, empty_list)
 {
 	std::string ExpectedResult = R"({"data":[],"log":false})";
 	std::ofstream Filestream("TestFile.json");
@@ -237,7 +254,7 @@ TEST(loadFrom, empty_list)
 	EXPECT_TRUE(std::remove("TestFile.json") == 0);
 }
 
-TEST(loadFrom, strings)
+TEST(load_from, strings)
 {
 	std::vector<std::string> ExpectedValues = {"one", "two", "three"};
 	std::string ExpectedResult = R"({"data":["one","two","three"],"log":false})";

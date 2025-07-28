@@ -27,7 +27,7 @@ public:
 	bool RemoveFirst(T Value, std::function<bool(const T&, const T&)> const& Comparator);
 	int RemoveAll(T Value, std::function<bool(const T&, const T&)> const& Comparator);
 	void CallOnAll(std::function<void(const T&)> const& Callback);
-	void Print();
+	void Print(std::ostream* InStream = nullptr);
 	void Clear();
 	void SaveTo(const std::string& Filename);
 	void LoadFrom(const std::string& Filename);
@@ -247,11 +247,12 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 }
 
 template <typename T>
-void SmartList<T>::Print()
+void SmartList<T>::Print(std::ostream* InStream)
 {
+	std::ostream& Out = InStream ? *InStream : std::cout;
 	if (!Head)
 	{
-		std::cout << "List is empty";
+		Out << "List is empty";
 		return;
 	}
 
@@ -263,7 +264,7 @@ void SmartList<T>::Print()
 		Stream << ", " << Current->Next->Data;
 		Current = Current->Next;
 	}
-	std::cout << Stream.str() << '\n';
+	Out << Stream.str() << '\n';
 }
 
 template <typename T>
