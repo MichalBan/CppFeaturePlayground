@@ -44,8 +44,8 @@ jobs:
     - name: Get Coverage
       if: runner.os == 'Linux'
       run: |
+        cd build
         ctest -T Coverage
-        cd ..
         
     - name: Generate Coverage Report
       if: runner.os == 'Linux'
