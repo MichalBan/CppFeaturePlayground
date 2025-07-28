@@ -6,4 +6,17 @@ My playground, where I practice using C++ features. This includes:
  - lambdas
  - json handling
 
-Also some practice on using CMake and google tests.
+The project is also a place to practice CMake:
+ - working with multiple CMakeLists
+ - creating project which can be built on linux, windows and macos
+ - downloading dependencies with FetchContent
+ - enabling testing and code coverage
+ - configuring CMakePresets
+
+As well as testing with help of listed technologies:
+ - ctest
+ - google test
+ - github actions
+ - gcovr
+ - coveralls
+
