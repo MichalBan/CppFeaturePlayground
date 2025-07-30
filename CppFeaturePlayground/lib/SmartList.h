@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <functional>
 #include <mutex>
 #include <thread>
@@ -90,7 +89,7 @@ void SmartList<T>::Add(std::initializer_list<T> NewValues)
 		}
 	}
 
-	for (;Iter < NewValues.end(); ++Iter)
+	for (; Iter < NewValues.end(); ++Iter)
 	{
 		Current->Next = std::make_shared<SmartNode<T>>();
 		Current->Next->Data = *Iter;
@@ -249,14 +248,13 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 template <typename T>
 void SmartList<T>::Print(std::ostream* InStream)
 {
-	std::ostream& Out = InStream ? *InStream : std::cout;
+	std::ostream& Stream = InStream ? *InStream : std::cout;
 	if (!Head)
 	{
-		Out << "List is empty";
+		Stream << "List is empty";
 		return;
 	}
 
-	std::ostringstream Stream;
 	Stream << "List content: " << Head->Data;
 	std::shared_ptr<SmartNode<T>> Current = Head;
 	while (Current->Next)
@@ -264,7 +262,7 @@ void SmartList<T>::Print(std::ostream* InStream)
 		Stream << ", " << Current->Next->Data;
 		Current = Current->Next;
 	}
-	Out << Stream.str() << '\n';
+	Stream << '\n';
 }
 
 template <typename T>
