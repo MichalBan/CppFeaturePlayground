@@ -38,7 +38,7 @@ jobs:
       run: |
         pip install gcovr
         cd build
-        ctest -T Coverage
+        ctest -T Coverage -Q
         cd ..
         gcovr --filter CppFeaturePlayground/lib/SmartList.h --coveralls coverage.json
         curl -X POST https://coveralls.io/api/v1/jobs -F 'json_file=@coverage.json'
