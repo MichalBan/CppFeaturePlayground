@@ -16,6 +16,14 @@ struct SmartNode
 };
 
 template <typename T>
+struct Sublist
+{
+	std::shared_ptr<SmartNode<T>> Head = nullptr;
+	int HeadIndex;
+	int NumElements;
+};
+
+template <typename T>
 class SmartList
 {
 public:
@@ -26,6 +34,7 @@ public:
 	bool RemoveFirst(T Value, std::function<bool(const T&, const T&)> const& Comparator);
 	int RemoveAll(T Value, std::function<bool(const T&, const T&)> const& Comparator);
 	void CallOnAll(std::function<void(const T&)> const& Callback);
+	void CallOnAll(std::function<void(const T&, int Index)> const& Callback);
 	void Print(std::ostream* InStream = nullptr);
 	void Clear();
 	void SaveTo(const std::string& Filename);
@@ -170,6 +179,15 @@ int SmartList<T>::RemoveAll(T Value, std::function<bool(const T&, const T&)> con
 template <typename T>
 void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 {
+	CallOnAll([Callback](const T& E, int)
+	{
+		Callback(E);
+	});
+}
+
+template <typename T>
+void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Callback)
+{
 	static int NumThreads = std::max<int>(int(std::thread::hardware_concurrency()), 1);
 	GetLogStream() << "Call on all with " << NumThreads << " threads\n";
 	if (!Head)
@@ -190,7 +208,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 	GetLogStream() << "Creating " << NumThreads - NumExtras << " threads to handle " << NumThreadElements <<
 		" elements and " << NumExtras << " threads to handle " << NumThreadElements + 1 << " elements\n";
 
-	std::vector<std::pair<std::shared_ptr<SmartNode<T>>, int>> ThreadLists;
+	std::vector<Sublist<T>> ThreadLists;
 	ThreadLists.resize(NumThreads);
 	Current = Head;
 	int CurrentIndex = 0;
@@ -199,8 +217,9 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 	{
 		GetLogStream() << CurrentIndex << " ";
 		int ThisThreadElements = i < NumExtras ? NumThreadElements + 1 : NumThreadElements;
-		ThreadLists[i].first = Current;
-		ThreadLists[i].second = ThisThreadElements;
+		ThreadLists[i].Head = Current;
+		ThreadLists[i].HeadIndex = CurrentIndex;
+		ThreadLists[i].NumElements = ThisThreadElements;
 		for (int j = 0; j < ThisThreadElements; ++j)
 		{
 			Current = Current->Next;
@@ -218,17 +237,17 @@ void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 		Threads[i] = std::thread([i, ThreadLists, &ThreadCounter, &OutputMutex, this, Callback]
 		{
 			OutputMutex.lock();
-			GetLogStream() << "Thread " << i << " starting with " << ThreadLists[i].second << " local nodes\n";
+			GetLogStream() << "Thread " << i << " starting with " << ThreadLists[i].NumElements << " local nodes\n";
 			OutputMutex.unlock();
-			std::shared_ptr<SmartNode<T>> ThreadCurrent = ThreadLists[i].first;
-			for (int j = 0; j < ThreadLists[i].second; ++j)
+			std::shared_ptr<SmartNode<T>> ThreadCurrent = ThreadLists[i].Head;
+			for (int j = 0; j < ThreadLists[i].NumElements; ++j)
 			{
 				OutputMutex.lock();
-				GetLogStream() << "Thread " << i << " running callback for local node " << j << " of value "
-					<< ThreadCurrent->Data << "\n";
+				GetLogStream() << "Thread " << i << " running callback for local node " << j << " (global " <<
+					ThreadLists[i].HeadIndex + j << ") of value " << ThreadCurrent->Data << "\n";
 				OutputMutex.unlock();
 
-				Callback(ThreadCurrent->Data);
+				Callback(ThreadCurrent->Data, ThreadLists[i].HeadIndex + j);
 				ThreadCurrent = ThreadCurrent->Next;
 			}
 			OutputMutex.lock();

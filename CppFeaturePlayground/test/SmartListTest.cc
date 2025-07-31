@@ -164,27 +164,28 @@ TEST(remove_all, remove_all_elements)
 
 TEST(call_on_all, square_array)
 {
-	std::initializer_list<int> Initializer = {0, 1, 2, 3, 4, 5};
+	std::initializer_list<int> Initializer = {4, 1, 1, 3, 7, 5};
+	std::vector<int> Initial = Initializer;
 	std::vector<int> Results;
 	Results.resize(Initializer.size());
 
 	SmartList<int> List;
 	List.Add(Initializer);
-	List.CallOnAll([&Results](const int& E)
+	List.CallOnAll([&Results](const int& E, int Index)
 	{
-		Results[E] = E * E;
+		Results[Index] = E * E;
 	});
 
 	for (int i = 0; i < Results.size(); ++i)
 	{
-		EXPECT_EQ(Results[i], i * i);
+		EXPECT_EQ(Results[i], Initial[i] * Initial[i]);
 	}
 }
 
 TEST(call_on_all, empty)
 {
 	SmartList<int> List;
-	List.CallOnAll([](const int& E)
+	List.CallOnAll([](const int&)
 	{
 	});
 }
