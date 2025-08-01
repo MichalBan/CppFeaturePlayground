@@ -207,6 +207,12 @@ TEST(print, elements)
 	EXPECT_EQ(StringStream.str(), "List content: 1, 5, 2, 5, 3\n");
 }
 
+TEST(save_to, failed_file_creation)
+{
+	SmartList<std::string> List;
+	EXPECT_FALSE(List.SaveTo("////"));
+}
+
 TEST(save_to, strings)
 {
 	std::initializer_list<std::string> Initializer = {"one", "two", "three"};
@@ -214,7 +220,7 @@ TEST(save_to, strings)
 
 	SmartList<std::string> List;
 	List.Add(Initializer);
-	List.SaveTo("TestFile");
+	EXPECT_TRUE(List.SaveTo("TestFile"));
 
 	std::ifstream Filestream("TestFile.json");
 	std::string FileContent;
@@ -273,4 +279,17 @@ TEST(load_from, strings)
 		Current = Current->Next;
 	}
 	EXPECT_TRUE(std::remove("TestFile.json") == 0);
+}
+
+TEST(get_log_stream, cout)
+{
+	SmartList<int> List;
+	List.Log = true;
+	EXPECT_TRUE(&List.GetLogStream() == &std::cout);
+}
+
+TEST(get_log_stream, null_stream)
+{
+	SmartList<int> List;
+	EXPECT_TRUE(&List.GetLogStream() == &List.NullStream);
 }

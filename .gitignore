@@ -419,3 +419,7 @@ FodyWeavers.xsd
 
 # Cmake build
 build
+
+# Html coverage reports
+*.html
+*.css

@@ -8,6 +8,8 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 
+#include "gtest/gtest_prod.h"
+
 template <typename T>
 struct SmartNode
 {
@@ -37,13 +39,15 @@ public:
 	void CallOnAll(std::function<void(const T&, int Index)> const& Callback);
 	void Print(std::ostream* InStream = nullptr);
 	void Clear();
-	void SaveTo(const std::string& Filename);
+	bool SaveTo(const std::string& Filename);
 	void LoadFrom(const std::string& Filename);
 	std::shared_ptr<SmartNode<T>> GetHead();
 
 	bool Log = false;
 
 private:
+	FRIEND_TEST(get_log_stream, cout);
+	FRIEND_TEST(get_log_stream, null_stream);
 	std::ostream& GetLogStream();
 
 	std::shared_ptr<SmartNode<T>> Head = nullptr;
@@ -292,7 +296,7 @@ void SmartList<T>::Clear()
 }
 
 template <typename T>
-void SmartList<T>::SaveTo(const std::string& Filename)
+bool SmartList<T>::SaveTo(const std::string& Filename)
 {
 	std::string FullName = Filename + ".json";
 	GetLogStream() << "Saving to file " << FullName << "\n";
@@ -300,7 +304,7 @@ void SmartList<T>::SaveTo(const std::string& Filename)
 	if (!Filestream.is_open())
 	{
 		GetLogStream() << "Saving failed. Failed to open file " << FullName << "\n";
-		return;
+		return false;
 	}
 
 	nlohmann::json JsonObject;
@@ -316,6 +320,7 @@ void SmartList<T>::SaveTo(const std::string& Filename)
 	GetLogStream() << "File content:\n" << Content << "\n";
 	Filestream << Content;
 	Filestream.close();
+	return true;
 }
 
 template <typename T>
