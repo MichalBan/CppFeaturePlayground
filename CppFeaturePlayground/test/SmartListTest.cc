@@ -162,6 +162,26 @@ TEST(remove_all, remove_all_elements)
 	EXPECT_TRUE(List.GetHead() == nullptr);
 }
 
+TEST(call_on_all, no_indexes)
+{
+	std::initializer_list<int> Initializer = { 0, 1, 2, 3, 4, 5 };
+	std::vector<int> Initial = Initializer;
+	std::vector<int> Results;
+	Results.resize(Initializer.size());
+
+	SmartList<int> List;
+	List.Add(Initializer);
+	List.CallOnAll([&Results](const int& E)
+	{
+		Results[E] = E * E;
+	});
+
+	for (int i = 0; i < Results.size(); ++i)
+	{
+		EXPECT_EQ(Results[i], Initial[i] * Initial[i]);
+	}
+}
+
 TEST(call_on_all, square_array)
 {
 	std::initializer_list<int> Initializer = {4, 1, 1, 3, 7, 5};
