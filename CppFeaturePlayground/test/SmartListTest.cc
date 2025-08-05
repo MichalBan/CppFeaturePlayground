@@ -124,6 +124,13 @@ TEST(remove_first, middle)
 	}
 }
 
+TEST(remove_first, default_comparison)
+{
+	SmartList<int> List;
+	List.Add({2, 4, 5, 2, 4});
+	EXPECT_TRUE(List.RemoveFirst(4));
+}
+
 TEST(remove_all, empty)
 {
 	SmartList<int> List;
@@ -162,9 +169,30 @@ TEST(remove_all, remove_all_elements)
 	EXPECT_TRUE(List.GetHead() == nullptr);
 }
 
+TEST(remove_all, default_comparison)
+{
+	std::initializer_list<int> Initializer = {2, 4, 5, 2, 4};
+	std::vector<int> Values = Initializer;
+
+	SmartList<int> List;
+	List.Add(Initializer);
+	EXPECT_TRUE(List.RemoveAll(2) == 2);
+
+	SmartNode<int>* Current = List.GetHead();
+	for (int Value : Values)
+	{
+		if (Value != 2)
+		{
+			EXPECT_TRUE(Current != nullptr);
+			EXPECT_EQ(Current->Data, Value);
+			Current = Current->Next.get();
+		}
+	}
+}
+
 TEST(call_on_all, no_indexes)
 {
-	std::initializer_list<int> Initializer = { 0, 1, 2, 3, 4, 5 };
+	std::initializer_list<int> Initializer = {0, 1, 2, 3, 4, 5};
 	std::vector<int> Initial = Initializer;
 	std::vector<int> Results;
 	Results.resize(Initializer.size());

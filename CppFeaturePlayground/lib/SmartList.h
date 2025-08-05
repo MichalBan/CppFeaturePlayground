@@ -6,7 +6,6 @@
 #include <functional>
 #include <mutex>
 #include <thread>
-#include <type_traits>
 #include <nlohmann/json.hpp>
 #include "gtest/gtest_prod.h"
 
@@ -33,7 +32,9 @@ public:
 
 	void Add(T NewValue);
 	void Add(std::initializer_list<T> NewValues);
+	bool RemoveFirst(const T& Value);
 	bool RemoveFirst(const T& Value, std::function<bool(const T&, const T&)> const& Comparator);
+	int RemoveAll(const T& Value);
 	int RemoveAll(const T& Value, std::function<bool(const T&, const T&)> const& Comparator);
 	void CallOnAll(std::function<void(const T&)> const& Callback);
 	void CallOnAll(std::function<void(const T&, int Index)> const& Callback);
@@ -110,6 +111,15 @@ void SmartList<T>::Add(std::initializer_list<T> NewValues)
 }
 
 template <typename T>
+bool SmartList<T>::RemoveFirst(const T& Value)
+{
+	return RemoveFirst(Value, [](const T& E1, const T& E2)
+	{
+		return E1 == E2;
+	});
+}
+
+template <typename T>
 bool SmartList<T>::RemoveFirst(const T& Value, std::function<bool(const T&, const T&)> const& Comparator)
 {
 	if (!Head)
@@ -139,6 +149,15 @@ bool SmartList<T>::RemoveFirst(const T& Value, std::function<bool(const T&, cons
 
 	GetLogStream() << "Searched the list. No elements removed\n";
 	return false;
+}
+
+template <typename T>
+int SmartList<T>::RemoveAll(const T& Value)
+{
+	return RemoveAll(Value, [](const T& E1, const T& E2)
+	{
+		return E1 == E2;
+	});
 }
 
 template <typename T>
