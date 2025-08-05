@@ -6,21 +6,21 @@
 #include <functional>
 #include <mutex>
 #include <thread>
+#include <type_traits>
 #include <nlohmann/json.hpp>
-
 #include "gtest/gtest_prod.h"
 
 template <typename T>
 struct SmartNode
 {
-	std::shared_ptr<SmartNode> Next = nullptr;
+	std::unique_ptr<SmartNode> Next = nullptr;
 	T Data;
 };
 
 template <typename T>
 struct Sublist
 {
-	std::shared_ptr<SmartNode<T>> Head = nullptr;
+	SmartNode<T>* Head = nullptr;
 	int HeadIndex;
 	int NumElements;
 };
@@ -33,15 +33,15 @@ public:
 
 	void Add(T NewValue);
 	void Add(std::initializer_list<T> NewValues);
-	bool RemoveFirst(T Value, std::function<bool(const T&, const T&)> const& Comparator);
-	int RemoveAll(T Value, std::function<bool(const T&, const T&)> const& Comparator);
+	bool RemoveFirst(const T& Value, std::function<bool(const T&, const T&)> const& Comparator);
+	int RemoveAll(const T& Value, std::function<bool(const T&, const T&)> const& Comparator);
 	void CallOnAll(std::function<void(const T&)> const& Callback);
 	void CallOnAll(std::function<void(const T&, int Index)> const& Callback);
-	void Print(std::ostream* InStream = nullptr);
+	void Print(std::ostream& InStream = std::cout);
 	void Clear();
 	bool SaveTo(const std::string& Filename);
 	void LoadFrom(const std::string& Filename);
-	std::shared_ptr<SmartNode<T>> GetHead();
+	SmartNode<T>* GetHead();
 
 	bool Log = false;
 
@@ -50,7 +50,7 @@ private:
 	FRIEND_TEST(get_log_stream, null_stream);
 	std::ostream& GetLogStream();
 
-	std::shared_ptr<SmartNode<T>> Head = nullptr;
+	std::unique_ptr<SmartNode<T>> Head = nullptr;
 	std::ofstream NullStream;
 };
 
@@ -67,51 +67,50 @@ void SmartList<T>::Add(T NewValue)
 
 	if (Head == nullptr)
 	{
-		Head = std::make_shared<SmartNode<T>>();
+		Head = std::make_unique<SmartNode<T>>();
 		Head->Data = NewValue;
 		return;
 	}
 
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	SmartNode<T>* Current = Head.get();
 	while (Current->Next != nullptr)
 	{
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
-	Current->Next = std::make_shared<SmartNode<T>>();
+	Current->Next = std::make_unique<SmartNode<T>>();
 	Current->Next->Data = NewValue;
 }
 
 template <typename T>
 void SmartList<T>::Add(std::initializer_list<T> NewValues)
 {
-	std::shared_ptr<SmartNode<T>> Current = Head;
-
+	SmartNode<T>* Current = Head.get();
 	const T* Iter = NewValues.begin();
 	if (!Head)
 	{
-		Head = std::make_shared<SmartNode<T>>();
+		Head = std::make_unique<SmartNode<T>>();
 		Head->Data = *Iter;
-		Current = Head;
+		Current = Head.get();
 		++Iter;
 	}
 	else
 	{
 		while (Current->Next)
 		{
-			Current = Current->Next;
+			Current = Current->Next.get();
 		}
 	}
 
 	for (; Iter < NewValues.end(); ++Iter)
 	{
-		Current->Next = std::make_shared<SmartNode<T>>();
+		Current->Next = std::make_unique<SmartNode<T>>();
 		Current->Next->Data = *Iter;
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 }
 
 template <typename T>
-bool SmartList<T>::RemoveFirst(T Value, std::function<bool(const T&, const T&)> const& Comparator)
+bool SmartList<T>::RemoveFirst(const T& Value, std::function<bool(const T&, const T&)> const& Comparator)
 {
 	if (!Head)
 	{
@@ -121,21 +120,21 @@ bool SmartList<T>::RemoveFirst(T Value, std::function<bool(const T&, const T&)> 
 
 	if (Comparator(Head->Data, Value))
 	{
-		Head = Head->Next;
+		Head = std::move(Head->Next);
 		GetLogStream() << "Removed 1 element\n";
 		return true;
 	}
 
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	SmartNode<T>* Current = Head.get();
 	while (Current->Next)
 	{
 		if (Comparator(Current->Next->Data, Value))
 		{
-			Current->Next = Current->Next->Next;
+			Current->Next = std::move(Current->Next->Next);
 			GetLogStream() << "Removed 1 element\n";
 			return true;
 		}
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 
 	GetLogStream() << "Searched the list. No elements removed\n";
@@ -143,7 +142,7 @@ bool SmartList<T>::RemoveFirst(T Value, std::function<bool(const T&, const T&)> 
 }
 
 template <typename T>
-int SmartList<T>::RemoveAll(T Value, std::function<bool(const T&, const T&)> const& Comparator)
+int SmartList<T>::RemoveAll(const T& Value, std::function<bool(const T&, const T&)> const& Comparator)
 {
 	if (!Head)
 	{
@@ -154,7 +153,7 @@ int SmartList<T>::RemoveAll(T Value, std::function<bool(const T&, const T&)> con
 	int Removed = 0;
 	while (Comparator(Head->Data, Value))
 	{
-		Head = Head->Next;
+		Head = std::move(Head->Next);
 		++Removed;
 		if (!Head)
 		{
@@ -163,17 +162,17 @@ int SmartList<T>::RemoveAll(T Value, std::function<bool(const T&, const T&)> con
 		}
 	}
 
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	SmartNode<T>* Current = Head.get();
 	while (Current->Next)
 	{
 		if (Comparator(Current->Next->Data, Value))
 		{
-			Current->Next = Current->Next->Next;
+			Current->Next = std::move(Current->Next->Next);
 			++Removed;
 		}
 		else
 		{
-			Current = Current->Next;
+			Current = Current->Next.get();
 		}
 	}
 	GetLogStream() << "Removed " << Removed << " elements\n";
@@ -183,7 +182,7 @@ int SmartList<T>::RemoveAll(T Value, std::function<bool(const T&, const T&)> con
 template <typename T>
 void SmartList<T>::CallOnAll(std::function<void(const T&)> const& Callback)
 {
-	CallOnAll([Callback](const T& E, int)
+	CallOnAll([&Callback](const T& E, int)
 	{
 		Callback(E);
 	});
@@ -200,11 +199,11 @@ void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Cal
 		return;
 	}
 	int NumElements = 1;
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	SmartNode<T>* Current = Head.get();
 	while (Current->Next)
 	{
 		++NumElements;
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 	GetLogStream() << "List has " << NumElements << " elements\n";
 	int NumThreadElements = NumElements / NumThreads;
@@ -214,7 +213,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Cal
 
 	std::vector<Sublist<T>> ThreadLists;
 	ThreadLists.resize(NumThreads);
-	Current = Head;
+	Current = Head.get();
 	int CurrentIndex = 0;
 	GetLogStream() << "Threads will start at elements: ";
 	for (int i = 0; i < NumThreads; ++i)
@@ -226,7 +225,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Cal
 		ThreadLists[i].NumElements = ThisThreadElements;
 		for (int j = 0; j < ThisThreadElements; ++j)
 		{
-			Current = Current->Next;
+			Current = Current->Next.get();
 			++CurrentIndex;
 		}
 	}
@@ -243,7 +242,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Cal
 			OutputMutex.lock();
 			GetLogStream() << "Thread " << i << " starting with " << ThreadLists[i].NumElements << " local nodes\n";
 			OutputMutex.unlock();
-			std::shared_ptr<SmartNode<T>> ThreadCurrent = ThreadLists[i].Head;
+			SmartNode<T>* ThreadCurrent = ThreadLists[i].Head;
 			for (int j = 0; j < ThreadLists[i].NumElements; ++j)
 			{
 				OutputMutex.lock();
@@ -252,7 +251,7 @@ void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Cal
 				OutputMutex.unlock();
 
 				Callback(ThreadCurrent->Data, ThreadLists[i].HeadIndex + j);
-				ThreadCurrent = ThreadCurrent->Next;
+				ThreadCurrent = ThreadCurrent->Next.get();
 			}
 			OutputMutex.lock();
 			++ThreadCounter;
@@ -269,23 +268,22 @@ void SmartList<T>::CallOnAll(std::function<void(const T&, int Index)> const& Cal
 }
 
 template <typename T>
-void SmartList<T>::Print(std::ostream* InStream)
+void SmartList<T>::Print(std::ostream& InStream)
 {
-	std::ostream& Stream = InStream ? *InStream : std::cout;
 	if (!Head)
 	{
-		Stream << "List is empty";
+		InStream << "List is empty";
 		return;
 	}
 
-	Stream << "List content: " << Head->Data;
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	InStream << "List content: " << Head->Data;
+	SmartNode<T>* Current = Head.get();
 	while (Current->Next)
 	{
-		Stream << ", " << Current->Next->Data;
-		Current = Current->Next;
+		InStream << ", " << Current->Next->Data;
+		Current = Current->Next.get();
 	}
-	Stream << '\n';
+	InStream << '\n';
 }
 
 template <typename T>
@@ -310,11 +308,11 @@ bool SmartList<T>::SaveTo(const std::string& Filename)
 	nlohmann::json JsonObject;
 	JsonObject["log"] = Log;
 	JsonObject["data"] = nlohmann::json::array();
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	SmartNode<T>* Current = Head.get();
 	while (Current)
 	{
 		JsonObject["data"].push_back(Current->Data);
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 	std::string Content = JsonObject.dump(4);
 	GetLogStream() << "File content:\n" << Content << "\n";
@@ -346,13 +344,13 @@ void SmartList<T>::LoadFrom(const std::string& Filename)
 		return;
 	}
 
-	Head = std::make_shared<SmartNode<T>>();
+	Head = std::make_unique<SmartNode<T>>();
 	Head->Data = JsonObject["data"].at(0);
-	std::shared_ptr<SmartNode<T>> Current = Head;
+	SmartNode<T>* Current = Head.get();
 	for (int i = 1; i < NumElements; ++i)
 	{
-		Current->Next = std::make_shared<SmartNode<T>>();
-		Current = Current->Next;
+		Current->Next = std::make_unique<SmartNode<T>>();
+		Current = Current->Next.get();
 		Current->Data = T(JsonObject["data"].at(i));
 	}
 	GetLogStream() << "Loaded list with " << NumElements << " elements\n";
@@ -369,7 +367,7 @@ std::ostream& SmartList<T>::GetLogStream()
 }
 
 template <typename T>
-std::shared_ptr<SmartNode<T>> SmartList<T>::GetHead()
+SmartNode<T>* SmartList<T>::GetHead()
 {
-	return Head;
+	return Head.get();
 }

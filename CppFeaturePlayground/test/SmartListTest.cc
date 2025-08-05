@@ -9,7 +9,7 @@ TEST(add, head)
 	SmartList<int> List;
 	List.Add(Value);
 
-	std::shared_ptr<SmartNode<int>> Head = List.GetHead();
+	SmartNode<int>* Head = List.GetHead();
 	EXPECT_TRUE(Head != nullptr);
 	EXPECT_EQ(Head->Data, Value);
 }
@@ -24,12 +24,12 @@ TEST(add, multiple)
 		List.Add(Val);
 	}
 
-	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
+	SmartNode<int>* Current = List.GetHead();
 	for (int Val : Initializer)
 	{
 		EXPECT_TRUE(Current != nullptr);
 		EXPECT_EQ(Current->Data, Val);
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 }
 
@@ -40,12 +40,12 @@ TEST(add_initializer, empty)
 	SmartList<int> List;
 	List.Add(Initializer);
 
-	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
+	SmartNode<int>* Current = List.GetHead();
 	for (int Val : Initializer)
 	{
 		EXPECT_TRUE(Current != nullptr);
 		EXPECT_EQ(Current->Data, Val);
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 }
 
@@ -58,12 +58,12 @@ TEST(add_initializer, non_empty)
 	List.Add(0);
 	List.Add(Initializer);
 
-	std::shared_ptr<SmartNode<int>> Current = List.GetHead()->Next->Next;
+	SmartNode<int>* Current = List.GetHead()->Next->Next.get();
 	for (int Val : Initializer)
 	{
 		EXPECT_TRUE(Current != nullptr);
 		EXPECT_EQ(Current->Data, Val);
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 }
 
@@ -90,14 +90,14 @@ TEST(remove_first, first)
 	List.Add(Initializer);
 	EXPECT_TRUE(List.RemoveFirst(Values[RemovedIndex], [](const int& E1, const int& E2) { return E1 == E2; }));
 
-	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
+	SmartNode<int>* Current = List.GetHead();
 	for (auto i = 0; i < Values.size(); ++i)
 	{
 		if (i != RemovedIndex)
 		{
 			EXPECT_TRUE(Current != nullptr);
 			EXPECT_EQ(Current->Data, Values[i]);
-			Current = Current->Next;
+			Current = Current->Next.get();
 		}
 	}
 }
@@ -112,14 +112,14 @@ TEST(remove_first, middle)
 	List.Add(Initializer);
 	EXPECT_TRUE(List.RemoveFirst(Values[RemovedIndex], [](const int& E1, const int& E2) { return E1 == E2; }));
 
-	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
+	SmartNode<int>* Current = List.GetHead();
 	for (auto i = 0; i < Values.size(); ++i)
 	{
 		if (i != RemovedIndex)
 		{
 			EXPECT_TRUE(Current != nullptr);
 			EXPECT_EQ(Current->Data, Values[i]);
-			Current = Current->Next;
+			Current = Current->Next.get();
 		}
 	}
 }
@@ -139,14 +139,14 @@ TEST(remove_all, first)
 	List.Add(Initializer);
 	EXPECT_TRUE(List.RemoveAll(2, [](const int& E1, const int& E2) { return E1 == E2; }) == 2);
 
-	std::shared_ptr<SmartNode<int>> Current = List.GetHead();
+	SmartNode<int>* Current = List.GetHead();
 	for (int Value : Values)
 	{
 		if (Value != 2)
 		{
 			EXPECT_TRUE(Current != nullptr);
 			EXPECT_EQ(Current->Data, Value);
-			Current = Current->Next;
+			Current = Current->Next.get();
 		}
 	}
 }
@@ -214,7 +214,7 @@ TEST(print, empty)
 {
 	SmartList<int> List;
 	std::ostringstream StringStream;
-	List.Print(&StringStream);
+	List.Print(StringStream);
 	EXPECT_EQ(StringStream.str(), "List is empty");
 }
 
@@ -223,7 +223,7 @@ TEST(print, elements)
 	SmartList<int> List;
 	List.Add({1, 5, 2, 5, 3});
 	std::ostringstream StringStream;
-	List.Print(&StringStream);
+	List.Print(StringStream);
 	EXPECT_EQ(StringStream.str(), "List content: 1, 5, 2, 5, 3\n");
 }
 
@@ -291,12 +291,12 @@ TEST(load_from, strings)
 
 	SmartList<std::string> List;
 	List.LoadFrom("TestFile");
-	std::shared_ptr<SmartNode<std::string>> Current = List.GetHead();
+	SmartNode<std::string>* Current = List.GetHead();
 	for (const std::string& ExpectedValue : ExpectedValues)
 	{
 		EXPECT_TRUE(Current != nullptr);
 		EXPECT_EQ(Current->Data, ExpectedValue);
-		Current = Current->Next;
+		Current = Current->Next.get();
 	}
 	EXPECT_TRUE(std::remove("TestFile.json") == 0);
 }
